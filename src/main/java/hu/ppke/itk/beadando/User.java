@@ -1,8 +1,3 @@
 package hu.ppke.itk.beadando;
 
-public class User implements Runnable {
-    @Override
-    public void run() {
-
-    }
-}
+public record User(String username ,String password) {}

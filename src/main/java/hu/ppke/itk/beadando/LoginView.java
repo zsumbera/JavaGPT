@@ -21,8 +21,19 @@ public class LoginView {
         stage.setTitle("JavaGPT");
         stage.setScene(scene);
         stage.show();
-        if (controller != null) {
-            controller.onStart();
+    }
+
+    public void register(){
+        try {
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("register-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+            stage.setTitle("JavaGPT");
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e){
+            System.out.println(e.getMessage());
         }
+
     }
 }

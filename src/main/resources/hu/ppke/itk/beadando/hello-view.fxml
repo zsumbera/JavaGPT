@@ -13,6 +13,6 @@
     </padding>
     <ListView fx:id="chatList" prefHeight="420.0" />
 
-    <TextField fx:id="prompt" onAction="#onSend" disable="true"/>
-    <Button fx:id="send" text="Start" onAction="#onStart" />
+    <TextField fx:id="prompt" onAction="#onSend"/>
+    <Button fx:id="send" text="Send" onAction="#initialize" />
 </VBox>

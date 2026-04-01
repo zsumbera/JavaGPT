@@ -1,59 +1,97 @@
 package hu.ppke.itk.beadando;
 
+import com.google.common.reflect.TypeToken;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import io.github.ollama4j.Ollama;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.github.ollama4j.exceptions.OllamaException;
-import io.github.ollama4j.models.chat.OllamaChatMessageRole;
-import io.github.ollama4j.models.chat.OllamaChatRequest;
-import io.github.ollama4j.models.chat.OllamaChatResult;
 
 public class Server implements Runnable {
-    private Ollama ollama;
-    private String model = "gemma3:1b";
-    private OllamaChatRequest builder;
-    private OllamaChatRequest requestModel;
-    private OllamaChatResult chatResult;
-    private String init;
-    public static void main(String[] args){
+    Gson gson ;
+    private List<User> users = Collections.synchronizedList(new ArrayList<>());
+    protected static ServerSocket serverSocket;
+    protected Ollama ollama;
+    protected Socket socket;
+    static int PORT_NUMBER = 2222;
 
 
+    public Server() throws IOException {
+        gson = new GsonBuilder().setPrettyPrinting().create();
+        try {
+            serverSocket = new ServerSocket(PORT_NUMBER);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        loadFromFile();
+    }
+
+    public static void main(String[] args) throws IOException {
+        new Thread(new Server()).start();
+        System.out.println("A Szerver elindult");
     }
 
     @Override
     public void run() {
-        try {
-        ollama = new Ollama("http://127.0.0.1:11434");
-        ollama.pullModel(model);
+        System.out.println("Server fut");
 
-            builder = OllamaChatRequest.builder().withModel(model);
-            requestModel =
-                    builder.withMessage(OllamaChatMessageRole.USER, ("Hi!"))
-                            .build();
-            chatResult = ollama.chat(requestModel, null);
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Socket socket = serverSocket.accept();
+
+                System.out.println("Új kliens csatlakozott");
+
+                Ollama ollama = new Ollama(socket);
+
+                new Thread(() -> {
+                    try {
+                        ollama.chat();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+
+            } catch (IOException e) {
+                System.err.println("Failed to communicate with client!");
+            }
+        }
+
+        System.out.println("A Szerver leáll");
+    }
 
 
-           init =(chatResult.getResponseModel().getMessage().getResponse());
-        } catch (OllamaException e) {
+    private void loadFromFile() {
+        File file = new File("users.json");
+        if (!file.exists()) return;
+
+        try (Reader reader = new FileReader(file)) {
+            List<User> loaded = gson.fromJson(reader,new TypeToken<ArrayList<User>>(){}.getType());
+            if (loaded != null) this.users = loaded;
+            System.out.println("Adatok betöltve. User-ek száma: " + users.size());
+        } catch (IOException e) {
+            System.err.println("Hiba a betöltéskor: " + e.getMessage());
+        } catch (Exception e){
             System.out.println(e.getMessage());
         }
     }
 
-    public String getInit(){
-        return init;
+    public void saveToFile() {
+        try (Writer writer = new FileWriter("users.json")) {
+            gson.toJson(users, writer);
+        } catch (IOException e) {
+            System.err.println("Hiba a mentéskor: " + e.getMessage());
+        }
     }
 
-    public String chat(String prompt){
-        try {
-            requestModel =
-                    builder.withMessages(chatResult.getChatHistory())
-                            .withMessage(
-                                    OllamaChatMessageRole.USER, prompt)
-                            .build();
-            chatResult = ollama.chat(requestModel, null);
-            return (chatResult.getResponseModel().getMessage().getResponse());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return "Error";
+    public void addUser(User user) {
+        users.add(user);
     }
+
+
 }

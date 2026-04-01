@@ -15,47 +15,55 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
+import java.io.IOException;
+import java.net.Socket;
+
 public class HelloController {
     public Button send;
     public ListView<ChatMessage> chatList;
     @FXML
     private TextField prompt;
-    Server server;
     private final ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
-
+    protected Client cl;
 
 
     public HelloController() {
-        this.server = new Server();
+
     }
 
     @FXML
     private void initialize() {
         chatList.setItems(messages);
         chatList.setCellFactory(list -> new ChatMessageCell());
+
+        try {
+            cl = new Client();
+
+            cl.setMessageHandler(msg -> {
+                Platform.runLater(() -> {
+                    messages.add(new ChatMessage(ChatMessage.Role.ASSISTANT, msg));
+                    scrollToBottom();
+                });
+            });
+
+            new Thread(cl).start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
-    protected void onSend(){
+    protected void onSend() {
         String text = prompt.getText();
-        if (text == null || text.isBlank()) {
-            return;
-        }
+        if (text == null || text.isBlank()) return;
+
         messages.add(new ChatMessage(ChatMessage.Role.USER, text));
-        String response = server.chat(text);
-        messages.add(new ChatMessage(ChatMessage.Role.ASSISTANT, response));
-        scrollToBottom();
-        prompt.setText("");
+        prompt.clear();
+
+        cl.send(text);
     }
 
-    public void onStart() {
-        prompt.setDisable(false);
-        send.setText("Send");
-        send.setOnAction(event -> onSend());
-        server.run();
-        messages.add(new ChatMessage(ChatMessage.Role.ASSISTANT, server.getInit()));
-        scrollToBottom();
-    }
 
     private void scrollToBottom() {
         Platform.runLater(() -> {
@@ -105,4 +113,7 @@ public class HelloController {
             setGraphic(row);
         }
     }
+
 }
+
+
