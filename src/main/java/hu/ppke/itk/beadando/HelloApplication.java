@@ -1,6 +1,5 @@
 package hu.ppke.itk.beadando;
 
-import io.github.ollama4j.exceptions.OllamaException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
