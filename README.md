@@ -59,31 +59,29 @@ A kliens és a szerver között minden üzenet egyetlen JSON sor (`Message` obje
 ## Projektstruktúra
 
 ```
-src/main/java/hu/ppke/itk/beadando/
-│
-├── client/
-│   ├── HelloApplication.java          ← JavaFX belépési pont
-│   ├── Client.java                    ← Socket kapcsolat + olvasó szál
-│   └── controller/
-│       ├── ChatController.java        ← Chat ablak logikája
-│       ├── LoginView.java             ← Bejelentkezés
-│       └── RegisterView.java         ← Regisztráció
-│
-├── server/
-│   ├── Server.java                    ← ServerSocket + ThreadPool
-│   ├── ClientHandler.java             ← Protokoll kezelés kliensenkénti szálban
-│   └── AuthService.java               ← Login / regisztráció, users.json
-│
-├── Ollama.java                        ← Ollama4j wrapper, session history
-│
-└── protocol/
-    ├── Message.java                   ← Közös üzenet objektum
-    └── MessageType.java               ← Üzenet típusok (enum)
+beadando/
+├── HelloApplication.java
 
-src/main/resources/hu/ppke/itk/beadando/
-├── hello-view.fxml                    ← Chat ablak
-├── login-view.fxml                    ← Bejelentkezés
-└── register-view.fxml                 ← Regisztráció
+├── client/
+│   ├── Client.java
+│   └── controller/
+│       ├── ChatController.java   ← csak controller logika, nincs inner model
+│       ├── ChatMessage.java      ← Role enum itt van, appendText() itt van
+│       └── BubbleCell.java       ← ListCell<ChatMessage> külön fájlban
+
+├── protocol/
+│   ├── Message.java
+│   └── MessageType.java
+
+├── model/
+│   └── User.java                 ← kiköltöztetve, kliens + szerver is használja
+
+├── server/
+│   ├── Server.java
+│   ├── ClientHandler.java
+│   ├── AuthService.java          ← User importja: beadando.model.User
+│   └── ollama/
+│       └── Ollama.java
 ```
 
 ---
