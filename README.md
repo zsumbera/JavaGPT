@@ -67,14 +67,11 @@ beadando/
 │   └── controller/
 │       ├── ChatController.java   ← csak controller logika, nincs inner model
 │       ├── ChatMessage.java      ← Role enum itt van, appendText() itt van
-│       └── BubbleCell.java       ← ListCell<ChatMessage> külön fájlban
+│       ├── User.java       
 
 ├── protocol/
 │   ├── Message.java
 │   └── MessageType.java
-
-├── model/
-│   └── User.java                 ← kiköltöztetve, kliens + szerver is használja
 
 ├── server/
 │   ├── Server.java
